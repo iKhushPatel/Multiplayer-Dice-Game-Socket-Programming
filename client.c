@@ -10,12 +10,7 @@
 #include <netdb.h>
 #include <errno.h>
 
-#define PORT 4441
-
-// void game();
-// int getRandomInteger();
-// int player();
-
+#define PORT 4444
 
 int main(){
 
@@ -40,48 +35,25 @@ int main(){
 		printf("[-]Error in connection.\n");
 		exit(1);
 	}
+	printf("Welcome");
 	printf("[+]Connected to Server.\n");
-
+	
 	while(1){
-		printf("ENTER YOUR NAME: \t");
-		scanf("%s", &buffer[0]);
-		send(clientSocket, buffer, strlen(buffer), 0);
-
-		if(strcmp(buffer, ":exit") == 0){
-			close(clientSocket);
-			printf("[-]Disconnected from server.\n");
-			exit(1);
-		}
+		printf("APAN WHILE ME A GAYA");
+		
+		// if(strcmp(buffer, ":exit") == 0){
+		// 	close(clientSocket);
+		// 	printf("[-]Disconnected from server.\n");
+		// 	exit(1);
+		// }
 
 		if(recv(clientSocket, buffer, 1024, 0) < 0){
 			printf("[-]Error in receiving data.\n");
 		}else{
-			printf("Server: \t%s\n", buffer);
+			printf("SERVER: YOUR DICE SCORE IS :: ");
+			printf("%d\n", ntohl(buffer));
 		}
 	}
 	return 0;
 }
 
-// int getRandomInteger(){
-// 	srand(time(NULL));
-// 	return (rand()%6 + 1);
-// }
-
-// // int player(){
-// // 	rand = getRandomInteger();
-// // 	return rand;
-// // }
-
-// void game(){
-
-// 	int TOTO_score = 0;
-// 	int TITI_score = 0;
-// 	int TOTO_dice = 0;
-// 	int TITI_dice = 0;
-
-// 	while(1){
-// 		sleep(2);
-// 		rand = getRandomInteger();
-
-// 	}
-// }
