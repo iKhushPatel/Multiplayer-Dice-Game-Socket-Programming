@@ -1,127 +1,88 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <signal.h>
+//Author: Khushkumar Patel, Ramya Iyer
+#include<stdio.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<time.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<netdb.h>
+#include<netinet/in.h>
 
-#define PORT 4444
+void servicePlayers(int ,int );
 
-int getRandomInteger(){
-	long int ss=0;
-    return (int) time(&ss)%6 + 1;
-		
-}
-
-void servicePlayers(int, int);
-
-int main(){
-
-	int sockfd, ret;
-	struct sockaddr_in serverAddr;
-
-	int newSocket;
-	struct sockaddr_in newAddr;
-
-	socklen_t addr_size;
-
-	char buffer[1024];
-	pid_t childpid;
-	int FLAG_CLIENT_1 = 0;
-	int FLAG_CLIENT_2 = 0;
-	int client1;
-	int client2;
+int main(int argc, char *argv[]){
+	char *myTime;
+	int sd, client1,client2,portNumber;
+	socklen_t len;
+	struct sockaddr_in servAdd;
+	int points;
+	int32_t conv_points;
+	int size = sizeof(conv_points);
 	
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if(sockfd < 0){
-		printf("[-] Error in connection.\n");
+	if(argc != 2){
+		fprintf(stderr,"Call model: %s <Port#>\n",argv[0]);
+		exit(0);
+	}
+	if((sd = socket(AF_INET, SOCK_STREAM, 0))<0){
+		fprintf(stderr, "[-] Could not create socket\n");
 		exit(1);
 	}
-	printf("[+]Server Socket is created.\n");
-
-	memset(&serverAddr, '\0', sizeof(serverAddr));
-
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(PORT);
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-	ret = bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
-	
-	if(ret < 0)	{
-		printf("[-]Error in binding.\n");
-		exit(1);
+	else{
+		fprintf(stderr, "[+] Socket Created\n");
 	}
-	printf("[+]Bind to port %d\n", 4444);
-
-	if(listen(sockfd, 10) == 0){
+	servAdd.sin_family = AF_INET;
+	servAdd.sin_addr.s_addr = htonl(INADDR_ANY);
+	sscanf(argv[1], "%d", &portNumber);
+	servAdd.sin_port = htons((uint16_t)portNumber);
+	bind(sd, (struct sockaddr *) &servAdd,sizeof(servAdd));
+	
+	if(listen(sd, 6) == 0){
 		printf("[+]Listening...\n");
 	}else{
 		printf("[-]Error in binding.\n");
 	}
-
-
 	while(1){
-		newSocket = accept(sockfd, (struct sockaddr*)&newAddr, &addr_size);
-		if(newSocket %2 ==0)
-		{
-			FLAG_CLIENT_1 = 1;
-			client1 = newSocket;
-			printf("CLIENT 1 AAYO");
-		}
-		else{
-			FLAG_CLIENT_2 = 1;
-			client2 = newSocket;
-			printf("CLIENT 2 AAYO");
-		}
-		if(FLAG_CLIENT_1 == 1 && FLAG_CLIENT_2 ==1){
-			printf("BOTH CLIETN AAVI GAYAYAYYA");
-			//if((childpid = fork()) == 0){
-				//close(sockfd);
-				servicePlayers(client1, client2);
-			//}
-		}
-		printf("Connection accepted from %s:%d\n",inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port) );
-		printf("%d\n", newSocket);
-		
+		client1=accept(sd,(struct sockaddr*)NULL,NULL);
+		write(client1,"Waiting for player 2 to join ...",100);
+		client2=accept(sd,(struct sockaddr*)NULL,NULL);
+		write(client1,"Player 2 joined ... Game is Starting ...",100);
+		write(client2,"Player 1 already joined ... Game is Starting ...",100);
+		printf("[+] Got a game request\n");
+		if(fork()==0)
+			servicePlayers(client1,client2);
 	}
-	close(newSocket);
-	return 0;
 }
-
-void servicePlayers(int client1, int client2){
-	int client1Score = 0;
-	int client2Score = 0;
-	int flag = 0;
-	
-	long int ss=0;
+void servicePlayers(int client1,int client2){
+	int c1_points=0,c2_points=0,size=sizeof(int32_t);
+	int32_t c1_conv_points,c2_conv_points;
+	char buf[100];
 	while(1){
-		if (client1Score >= 100 ){
-			flag = 1;
+		sleep(1);
+		write(client1,"You can now play",100); //strlen(message)
+		if(read(client1,&c1_conv_points,size)<0)
+			printf("Read Error from Player 1");
+		c1_points+=ntohl(c1_conv_points);
+		snprintf(buf, 100, "Your Score is :: %d \nOpponent Score is :: %d\n\n", c1_points, c2_points);
+		write(client1,buf,100);
+		
+		if(c1_points>=100){
+			write(client1,"Game over: You won the game",100);
+			write(client2,"Game over: You lost the game",100);
 			break;
-		}else if (client2Score >= 100){
-			flag = 2;
-			break;
-		}else{
-			client1Score += (int) time(&ss)%6 + 1;
-			client2Score += (int) time(&ss)%6 + 1;
 		}
-		//send(client1, "YOUR DICE SCORE IS :: ", 1024, 0);
-		//send(client2, "YOUR DICE SCORE IS :: ", 1024, 0);
-		sprintf("%s", htonl(client1Score));
-		sprintf("%s", htonl(client2Score));
-		send(client1, htonl(client1Score), 1024, 0);
-		send(client2, htonl(client2Score), 1024, 0);
-		if(flag == 1)
-			send(client1, "CLIENT 1 WINS", 1024, 0);
-		else if(flag == 2)
-			send(client2, "CLIENT 2 WINS", 1024, 0);
-
+		sleep(2);
+		write(client2,"You can now play",100);
+		if(read(client2,&c2_conv_points,size)<0)
+			printf("Read Error from Player 2");
+		c2_points+=ntohl(c2_conv_points);
+		snprintf(buf, 100, "Your Score is :: %d \nOpponent Score is :: %d\n\n", c2_points, c1_points);
+		write(client2,buf,100);
+		if(c2_points>=100){
+			write(client2,"Game over: You won the game",100);
+			write(client1,"Game over: You lost the game",100);
+			break;
+		}
+	}
+	close(client1);
+	close(client2);
 }
-}
-
-
-
-
