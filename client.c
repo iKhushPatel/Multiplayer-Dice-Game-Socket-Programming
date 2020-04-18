@@ -6,9 +6,6 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <time.h>
-#include <netdb.h>
-#include <errno.h>
 
 #define PORT 4444
 
@@ -35,25 +32,24 @@ int main(){
 		printf("[-]Error in connection.\n");
 		exit(1);
 	}
-	printf("Welcome");
 	printf("[+]Connected to Server.\n");
-	
+
 	while(1){
-		printf("APAN WHILE ME A GAYA");
-		
-		// if(strcmp(buffer, ":exit") == 0){
-		// 	close(clientSocket);
-		// 	printf("[-]Disconnected from server.\n");
-		// 	exit(1);
-		// }
+		printf("Client: \t");
+		scanf("%s", &buffer[0]);
+		send(clientSocket, buffer, strlen(buffer), 0);
+
+		if(strcmp(buffer, ":exit") == 0){
+			close(clientSocket);
+			printf("[-]Disconnected from server.\n");
+			exit(1);
+		}
 
 		if(recv(clientSocket, buffer, 1024, 0) < 0){
 			printf("[-]Error in receiving data.\n");
 		}else{
-			printf("SERVER: YOUR DICE SCORE IS :: ");
-			printf("%d\n", ntohl(buffer));
+			printf("Server: \t%s\n", buffer);
 		}
 	}
 	return 0;
 }
-
