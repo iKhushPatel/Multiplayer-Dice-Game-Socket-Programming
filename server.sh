@@ -1,1 +1,1 @@
-gcc server.c -o server && ./server
+gcc server.c -o server && ./server 9999
