@@ -30,6 +30,7 @@ who would be the two players in a scenario similar to example 4, from chapter VI
 Concepts: Socket Programming
 
 How to run:
+
 Terminal 1: `bash server.sh`
 
 Terminal 2: `bash client1.sh`
