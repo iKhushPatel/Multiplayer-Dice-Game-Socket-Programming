@@ -2,7 +2,7 @@
 
 This is Dice game which was part of my Advance System Programming subject small project to undertsand the concept of socket programming in C. 
 
-**Project Definition: **
+**Project Definition:**
 
 Two programs, a client and a server, to implement a simple online game. The server
 process and the client process will run on two different machines and the communication
@@ -30,7 +30,7 @@ who would be the two players in a scenario similar to example 4, from chapter VI
 
 Concepts: Socket Programming
 
-How to run:
+**How to run:**
 
 Terminal 1: `bash server.sh`
 
