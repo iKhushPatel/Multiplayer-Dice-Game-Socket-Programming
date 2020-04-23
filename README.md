@@ -3,6 +3,7 @@
 This is Dice game which was part of my Advance System Programming subject small project to undertsand the concept of socket programming in C. 
 
 **Project Definition: **
+
 Two programs, a client and a server, to implement a simple online game. The server
 process and the client process will run on two different machines and the communication
 between the two processes is achieved using Sockets.
